@@ -48,6 +48,7 @@ interface CornerListProps {
   onGpsCapture: () => void;
   gpsLoading: boolean;
   gpsError: string | null;
+  gpsMsg?: string | null;
 }
 
 function CornerList({
@@ -57,6 +58,7 @@ function CornerList({
   onGpsCapture,
   gpsLoading,
   gpsError,
+  gpsMsg,
 }: CornerListProps) {
   return (
     <div className="space-y-2">
@@ -106,7 +108,7 @@ function CornerList({
         {gpsLoading ? (
           <>
             <span className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-            Dang lay GPS...
+            <span className="text-left text-xs leading-tight">{gpsMsg || 'Dang khoi dong GPS...'}</span>
           </>
         ) : (
           'Them goc tai vi tri GPS hien tai'
@@ -131,6 +133,7 @@ export default function RoomsPage() {
   const [corners, setCorners] = useState<LatLng[]>([]);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState<string | null>(null);
+  const [gpsMsg, setGpsMsg] = useState<string | null>(null);
   const [currLoc, setCurrLoc] = useState<LatLng | null>(null);
   const [creating, setCreating] = useState(false);
   const [editRoom, setEditRoom] = useState<Room | null>(null);
@@ -139,6 +142,7 @@ export default function RoomsPage() {
   const [eCorners, setECorners] = useState<LatLng[]>([]);
   const [eGpsLoading, setEGpsLoading] = useState(false);
   const [eGpsError, setEGpsError] = useState<string | null>(null);
+  const [eGpsMsg, setEGpsMsg] = useState<string | null>(null);
   const [eCurrLoc, setECurrLoc] = useState<LatLng | null>(null);
   const [updating, setUpdating] = useState(false);
   const [viewId, setViewId] = useState<string | null>(null);
@@ -151,14 +155,67 @@ export default function RoomsPage() {
 
   useEffect(() => { loadRooms(); }, [loadRooms]);
 
-  const grabGps = (onGot: (p: LatLng) => void, setLoading: (b: boolean) => void, setErr: (s: string | null) => void) => {
+  // ── Multi-sample GPS capture for corners ────────────────────
+  // Thu 10 mau, loc bo mau sai so > 25m, tinh trung binh co trong so
+  const CORNER_SAMPLES = 10;
+  const CORNER_MAX_ACCURACY = 25; // met
+
+  const grabGps = (
+    onGot: (p: LatLng) => void,
+    setLoading: (b: boolean) => void,
+    setErr: (s: string | null) => void,
+    setMsg: (s: string | null) => void,
+  ) => {
     if (!navigator.geolocation) { setErr('Trinh duyet khong ho tro GPS'); return; }
-    setLoading(true); setErr(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => { setLoading(false); onGot({ lat: pos.coords.latitude, lng: pos.coords.longitude }); },
-      (err) => { setLoading(false); setErr('GPS loi: ' + err.message); },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+    setLoading(true); setErr(null); setMsg('Dang khoi dong GPS...');
+
+    const samples: { lat: number; lng: number; accuracy: number }[] = [];
+    let watchId: number;
+    let timeoutId: ReturnType<typeof setTimeout>;
+    let done = false;
+
+    const finish = () => {
+      if (done) return;
+      done = true;
+      navigator.geolocation.clearWatch(watchId);
+      clearTimeout(timeoutId);
+      setLoading(false);
+      setMsg(null);
+
+      if (samples.length === 0) { setErr('Khong lay duoc mau GPS nao'); return; }
+
+      // Uu tien mau co do chinh xac tot; fallback neu khong du
+      const good = samples.filter(s => s.accuracy <= CORNER_MAX_ACCURACY);
+      const useArr = good.length >= 3 ? good : samples;
+
+      // Trung binh co trong so: weight = 1 / accuracy^2
+      let wLat = 0, wLng = 0, wSum = 0;
+      for (const s of useArr) {
+        const w = 1 / (s.accuracy * s.accuracy);
+        wLat += s.lat * w; wLng += s.lng * w; wSum += w;
+      }
+      onGot({ lat: wLat / wSum, lng: wLng / wSum });
+    };
+
+    watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        samples.push({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+        setMsg(`Thu mau ${samples.length}/${CORNER_SAMPLES} (±${pos.coords.accuracy.toFixed(1)}m)`);
+        if (samples.length >= CORNER_SAMPLES) finish();
+      },
+      (err) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timeoutId);
+        navigator.geolocation.clearWatch(watchId);
+        setLoading(false); setMsg(null);
+        setErr('GPS loi: ' + err.message);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
     );
+
+    // Timeout 30s: dung voi bat cu so mau nao da co
+    timeoutId = setTimeout(() => { if (!done) finish(); }, 30000);
   };
 
   const handleCreate = async (e: FormEvent) => {
@@ -166,7 +223,7 @@ export default function RoomsPage() {
     if (!name.trim()) return;
     setCreating(true);
     await fetch('/api/rooms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim(), corners, bufferRadius: buffer }) });
-    setName(''); setBuffer(30); setCorners([]); setCurrLoc(null); setGpsError(null); setCreating(false);
+    setName(''); setBuffer(30); setCorners([]); setCurrLoc(null); setGpsError(null); setGpsMsg(null); setCreating(false);
     loadRooms();
   };
 
@@ -191,7 +248,7 @@ export default function RoomsPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const cancelEdit = () => { setEditRoom(null); setECorners([]); setECurrLoc(null); setEGpsError(null); };
+  const cancelEdit = () => { setEditRoom(null); setECorners([]); setECurrLoc(null); setEGpsError(null); setEGpsMsg(null); };
 
   const aCorners = editRoom ? eCorners : corners;
   const aBuffer = editRoom ? eBuffer : buffer;
@@ -230,8 +287,8 @@ export default function RoomsPage() {
                   <input type="range" min={5} max={300} step={5} value={eBuffer} onChange={e => setEBuffer(+e.target.value)} className="w-full accent-blue-600" />
                 </div>
                 <CornerList corners={eCorners} onRemove={i => setECorners(p => p.filter((_, j) => j !== i))} onClear={() => setECorners([])}
-                  onGpsCapture={() => grabGps(p => { setECorners(c => [...c, p]); setECurrLoc(p); }, setEGpsLoading, setEGpsError)}
-                  gpsLoading={eGpsLoading} gpsError={eGpsError} />
+                  onGpsCapture={() => grabGps(p => { setECorners(c => [...c, p]); setECurrLoc(p); }, setEGpsLoading, setEGpsError, setEGpsMsg)}
+                  gpsLoading={eGpsLoading} gpsError={eGpsError} gpsMsg={eGpsMsg} />
                 <div className="flex gap-2 pt-1">
                   <button onClick={handleUpdate} disabled={updating || !eName.trim()} className="flex-1 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50">{updating ? 'Dang luu...' : 'Luu thay doi'}</button>
                   <button onClick={cancelEdit} className="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300">Huy</button>
@@ -248,8 +305,8 @@ export default function RoomsPage() {
                   <input type="range" min={5} max={300} step={5} value={buffer} onChange={e => setBuffer(+e.target.value)} className="w-full accent-blue-600" />
                 </div>
                 <CornerList corners={corners} onRemove={i => setCorners(p => p.filter((_, j) => j !== i))} onClear={() => setCorners([])}
-                  onGpsCapture={() => grabGps(p => { setCorners(c => [...c, p]); setCurrLoc(p); }, setGpsLoading, setGpsError)}
-                  gpsLoading={gpsLoading} gpsError={gpsError} />
+                  onGpsCapture={() => grabGps(p => { setCorners(c => [...c, p]); setCurrLoc(p); }, setGpsLoading, setGpsError, setGpsMsg)}
+                  gpsLoading={gpsLoading} gpsError={gpsError} gpsMsg={gpsMsg} />
                 <button type="submit" disabled={creating || !name.trim()} className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">{creating ? 'Dang tao...' : 'Tao phong'}</button>
               </form>
             )}

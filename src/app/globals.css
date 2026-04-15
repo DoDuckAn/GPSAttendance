@@ -18,4 +18,11 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: system-ui, -apple-system, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
+
+/* Safe area insets for notched/dynamic-island phones */
+.safe-top { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.pb-safe { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }

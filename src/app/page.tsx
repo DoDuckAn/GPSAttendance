@@ -233,13 +233,13 @@ export default function ClientPage() {
       <header className="sticky top-0 z-10 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 safe-top">
         <div className="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">
           <h1 className="text-base font-bold text-gray-900 dark:text-white tracking-tight">
-            ðŸ“ Äiá»ƒm danh
+            🔬 Điểm danh
           </h1>
           <a
             href="/admin"
             className="text-xs font-medium text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 active:bg-blue-100"
           >
-            Admin â†’
+            Admin →
           </a>
         </div>
       </header>
@@ -263,9 +263,9 @@ export default function ClientPage() {
         {/* Error banner */}
         {error && (
           <div className="mb-5 flex items-start gap-3 p-3.5 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-xl text-sm text-red-700 dark:text-red-300">
-            <span className="text-base leading-snug">âš ï¸</span>
+            <span className="text-base leading-snug">⚠️</span>
             <span className="flex-1 leading-snug">{error}</span>
-            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 font-bold text-lg leading-none mt-0.5">Ã—</button>
+            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 font-bold text-lg leading-none mt-0.5">×</button>
           </div>
         )}
 
@@ -273,14 +273,14 @@ export default function ClientPage() {
         {step === 'select-room' && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Chá»n phÃ²ng</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Chá»n phÃ²ng báº¡n muá»‘n Ä‘iá»ƒm danh</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Chọn phòng</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Chọn phòng bạn muốn điểm danh</p>
             </div>
 
             {rooms.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
-                <div className="text-4xl mb-3">ðŸ </div>
-                <p className="text-sm">ChÆ°a cÃ³ phÃ²ng nÃ o. LiÃªn há»‡ admin Ä‘á»ƒ táº¡o phÃ²ng.</p>
+                <div className="text-4xl mb-3">🏠</div>
+                <p className="text-sm">Chưa có phòng nào. Liên hệ admin để tạo phòng.</p>
               </div>
             ) : (
               <div className="space-y-2.5">
@@ -299,12 +299,12 @@ export default function ClientPage() {
                         {room.name}
                       </span>
                       {selectedRoom?._id === room._id && (
-                        <span className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0">âœ“</span>
+                        <span className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0">✓</span>
                       )}
                     </div>
                     <div className="text-xs text-gray-400 mt-1 flex gap-2">
                       <span>Buffer {room.bufferRadius}m</span>
-                      {room.corners.length > 0 && <span>â€¢ {room.corners.length} gÃ³c</span>}
+                      {room.corners.length > 0 && <span>• {room.corners.length} góc</span>}
                     </div>
                   </button>
                 ))}
@@ -317,10 +317,10 @@ export default function ClientPage() {
                   onClick={startCollection}
                   className="w-full py-4 bg-blue-600 active:bg-blue-700 text-white rounded-2xl font-bold text-lg shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98]"
                 >
-                  ðŸŽ¯ Äiá»ƒm danh ngay
+                  🎯 Điểm danh ngay
                 </button>
                 <p className="text-center text-xs text-gray-400 mt-2">
-                  PhÃ²ng: <strong className="text-gray-600 dark:text-gray-300">{selectedRoom.name}</strong>
+                  Phòng: <strong className="text-gray-600 dark:text-gray-300">{selectedRoom.name}</strong>
                 </p>
               </div>
             )}
@@ -334,21 +334,21 @@ export default function ClientPage() {
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
                 <div className="absolute inset-0 rounded-full bg-blue-400/30 animate-ping" />
-                <span className="text-4xl relative z-10">ðŸ“¡</span>
+                <span className="text-4xl relative z-10">📡</span>
               </div>
             </div>
 
             <div className="text-center space-y-1">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Äang thu tháº­p GPS</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">HÃ£y Ä‘á»©ng yÃªn trong phÃ²ng</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Đang thu thập GPS</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Hãy đứng yên trong phòng</p>
             </div>
 
             {/* Circular-ish large progress */}
             <div className="w-full space-y-2">
               <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                <span>{samples.length}/{NUM_SAMPLES} máº«u</span>
+                <span>{samples.length}/{NUM_SAMPLES} mẫu</span>
                 {samples.length > 0 && (
-                  <span>Â±{samples[samples.length - 1].accuracy.toFixed(0)}m</span>
+                  <span>±{samples[samples.length - 1].accuracy.toFixed(0)}m</span>
                 )}
               </div>
               <div className="w-full h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -369,7 +369,7 @@ export default function ClientPage() {
                   <div key={i} className="text-gray-500 dark:text-gray-400 flex gap-2">
                     <span className="text-gray-300 w-4">#{samples.length - i}</span>
                     <span>{s.lat.toFixed(5)}, {s.lng.toFixed(5)}</span>
-                    <span className="text-gray-400 ml-auto">Â±{s.accuracy.toFixed(0)}m</span>
+                    <span className="text-gray-400 ml-auto">±{s.accuracy.toFixed(0)}m</span>
                   </div>
                 ))}
               </div>
@@ -381,14 +381,14 @@ export default function ClientPage() {
         {step === 'results' && results && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Káº¿t quáº£ phÃ¢n tÃ­ch</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Kết quả phân tích</h2>
               <p className="text-sm text-gray-500 mt-0.5">
-                PhÃ²ng: <span className="font-semibold text-blue-600 dark:text-blue-400">{selectedRoom?.name}</span>
-                <span className="text-gray-400 ml-2">â€” {samples.length} máº«u GPS</span>
+                Phòng: <span className="font-semibold text-blue-600 dark:text-blue-400">{selectedRoom?.name}</span>
+                <span className="text-gray-400 ml-2">— {samples.length} mẫu GPS</span>
               </p>
             </div>
 
-            {/* Summary badge â€” consensus result */}
+            {/* Tóm tắt — consensus */}
             {(() => {
               const vals = Object.values(results);
               const insideCount = vals.filter(r => r.inside).length;
@@ -399,11 +399,11 @@ export default function ClientPage() {
                     ? 'bg-green-50 dark:bg-green-900/30 border-2 border-green-300 dark:border-green-700'
                     : 'bg-red-50 dark:bg-red-900/30 border-2 border-red-300 dark:border-red-700'
                 }`}>
-                  <div className="text-3xl mb-1">{consensus ? 'âœ…' : 'âŒ'}</div>
+                  <div className="text-3xl mb-1">{consensus ? '✅' : '❌'}</div>
                   <div className={`font-bold text-lg ${consensus ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
-                    {consensus ? 'Äa sá»‘: TRONG PHÃ’NG' : 'Äa sá»‘: NGOÃ€I PHÃ’NG'}
+                    {consensus ? 'Đa số: TRONG PHÒNG' : 'Đa số: NGOÀI PHÒNG'}
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">{insideCount}/{vals.length} thuáº­t toÃ¡n xÃ¡c nháº­n</div>
+                  <div className="text-xs text-gray-500 mt-1">{insideCount}/{vals.length} thuật toán xác nhận</div>
                 </div>
               );
             })()}
@@ -422,7 +422,7 @@ export default function ClientPage() {
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
                     result.inside ? 'bg-green-100 dark:bg-green-900/50' : 'bg-red-100 dark:bg-red-900/50'
                   }`}>
-                    {result.inside ? 'âœ“' : 'âœ—'}
+                    {result.inside ? '✓' : '✗'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm text-gray-900 dark:text-white truncate">
@@ -434,7 +434,7 @@ export default function ClientPage() {
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className={`font-bold text-sm ${result.inside ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                      {result.inside ? 'TRONG' : 'NGOÃ€I'}
+                      {result.inside ? 'TRONG' : 'NGOÀI'}
                     </div>
                     <div className="text-xs text-gray-500">{(result.confidence * 100).toFixed(0)}%</div>
                   </div>
@@ -446,7 +446,7 @@ export default function ClientPage() {
               onClick={() => setStep('feedback')}
               className="w-full py-4 bg-blue-600 active:bg-blue-700 text-white rounded-2xl font-bold text-base shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-[0.98]"
             >
-              Tiáº¿p theo â†’ XÃ¡c nháº­n thá»±c táº¿
+              Tiếp theo → Xác nhận thực tế
             </button>
           </div>
         )}
@@ -455,16 +455,16 @@ export default function ClientPage() {
         {step === 'feedback' && (
           <div className="flex flex-col items-center space-y-8 pt-4">
             <div className="text-center space-y-2">
-              <div className="text-5xl">ðŸ¤”</div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">XÃ¡c nháº­n thá»±c táº¿</h2>
+              <div className="text-5xl">🤔</div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Xác nhận thực tế</h2>
               <p className="text-gray-600 dark:text-gray-400">
-                Báº¡n cÃ³ Ä‘ang <strong>á»Ÿ trong</strong> phÃ²ng{' '}
+                Bạn có đang <strong>ở trong</strong> phòng{' '}
                 <span className="text-blue-600 dark:text-blue-400 font-semibold">
                   &ldquo;{selectedRoom?.name}&rdquo;
                 </span>{' '}
-                khÃ´ng?
+                không?
               </p>
-              <p className="text-xs text-gray-400">Pháº£n há»“i cá»§a báº¡n giÃºp cáº£i thiá»‡n Ä‘á»™ chÃ­nh xÃ¡c nghiÃªn cá»©u</p>
+              <p className="text-xs text-gray-400">Phản hồi của bạn giúp cải thiện độ chính xác nghiên cứu</p>
             </div>
 
             <div className="w-full space-y-3">
@@ -473,19 +473,19 @@ export default function ClientPage() {
                 disabled={loading}
                 className="w-full py-5 bg-green-500 active:bg-green-600 text-white rounded-2xl font-bold text-xl shadow-lg shadow-green-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-50"
               >
-                âœ… CÃ³, tÃ´i Ä‘ang á»Ÿ trong phÃ²ng
+                ✅ Có, tôi đang ở trong phòng
               </button>
               <button
                 onClick={() => submitFeedback(false)}
                 disabled={loading}
                 className="w-full py-5 bg-red-500 active:bg-red-600 text-white rounded-2xl font-bold text-xl shadow-lg shadow-red-200 dark:shadow-none transition-all active:scale-[0.98] disabled:opacity-50"
               >
-                âŒ KhÃ´ng, tÃ´i á»Ÿ ngoÃ i phÃ²ng
+                ❌ Không, tôi ở ngoài phòng
               </button>
             </div>
 
             {loading && (
-              <p className="text-sm text-gray-400 animate-pulse">Äang lÆ°u...</p>
+              <p className="text-sm text-gray-400 animate-pulse">Đang lưu...</p>
             )}
           </div>
         )}
@@ -494,19 +494,19 @@ export default function ClientPage() {
         {step === 'done' && (
           <div className="flex flex-col items-center space-y-6 pt-8">
             <div className="w-24 h-24 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
-              <span className="text-5xl">ðŸŽ‰</span>
+              <span className="text-5xl">🎉</span>
             </div>
             <div className="text-center space-y-2">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">HoÃ n táº¥t!</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Hoàn tất!</h2>
               <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xs">
-                Dá»¯ liá»‡u Ä‘Ã£ Ä‘Æ°á»£c lÆ°u. Cáº£m Æ¡n báº¡n Ä‘Ã£ Ä‘Ã³ng gÃ³p cho nghiÃªn cá»©u!
+                Dữ liệu đã được lưu. Cảm ơn bạn đã đóng góp cho nghiên cứu!
               </p>
             </div>
             <button
               onClick={reset}
               className="w-full max-w-xs py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-bold text-base active:opacity-80 transition-all active:scale-[0.98]"
             >
-              Äiá»ƒm danh láº§n khÃ¡c
+              Điểm danh lần khác
             </button>
           </div>
         )}

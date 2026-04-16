@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: '/admin/rooms', label: 'Rooms' },
   { href: '/admin/logs', label: 'Logs' },
   { href: '/admin/analytics', label: 'Analytics' },
+  { href: '/admin/algorithm-test', label: '🧪 Algo Test' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

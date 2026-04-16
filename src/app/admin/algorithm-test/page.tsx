@@ -110,6 +110,9 @@ function runAnalysis(realSamples: GpsSample[]): { rows: AlgoRow[]; stats: TestSt
 
 export default function AlgorithmTestPage() {
   const [n, setN] = useState(20);
+  // 'timeout' → auto-finalise after N seconds; 'strict' → wait until N samples collected
+  const [timeoutMode, setTimeoutMode] = useState<'timeout' | 'strict'>('timeout');
+  const [timeoutSecs, setTimeoutSecs] = useState(30);
   const [phase, setPhase] = useState<Phase>('idle');
   const [collected, setCollected] = useState(0);
   const [currentAccuracy, setCurrentAccuracy] = useState<number | null>(null);
@@ -195,11 +198,14 @@ export default function AlgorithmTestPage() {
       { enableHighAccuracy: true, maximumAge: 0 },
     );
 
-    // Hard 30-second cap
-    timeoutRef.current = setTimeout(() => {
-      finalise(samplesRef.current);
-    }, 30_000);
-  }, [n, finalise, stopCollection]);
+    // Only set timeout when mode is 'timeout'
+    if (timeoutMode === 'timeout') {
+      timeoutRef.current = setTimeout(() => {
+        finalise(samplesRef.current);
+      }, timeoutSecs * 1000);
+    }
+    // mode === 'strict': no timeout — wait until exactly N samples are collected
+  }, [n, timeoutMode, timeoutSecs, finalise, stopCollection]);
 
   // ── Reset ──
   const reset = useCallback(() => {
@@ -264,6 +270,63 @@ export default function AlgorithmTestPage() {
             />
           </div>
 
+          {/* Timeout mode toggle */}
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Completion mode
+            </span>
+            <div className="flex rounded-lg overflow-hidden border border-gray-300 dark:border-gray-700 text-sm">
+              <button
+                type="button"
+                disabled={phase === 'collecting'}
+                onClick={() => setTimeoutMode('timeout')}
+                className={`px-3 py-2 transition-colors disabled:opacity-50 ${
+                  timeoutMode === 'timeout'
+                    ? 'bg-blue-600 text-white font-semibold'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                ⏱ Timeout
+              </button>
+              <button
+                type="button"
+                disabled={phase === 'collecting'}
+                onClick={() => setTimeoutMode('strict')}
+                className={`px-3 py-2 transition-colors disabled:opacity-50 ${
+                  timeoutMode === 'strict'
+                    ? 'bg-blue-600 text-white font-semibold'
+                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                🔒 Strict N
+              </button>
+            </div>
+          </div>
+
+          {/* Timeout seconds — only shown in timeout mode */}
+          {timeoutMode === 'timeout' && (
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="timeout-input"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Timeout (seconds)
+              </label>
+              <input
+                id="timeout-input"
+                type="number"
+                min={5}
+                max={300}
+                value={timeoutSecs}
+                onChange={(e) =>
+                  setTimeoutSecs(Math.max(5, Math.min(300, Number(e.target.value))))
+                }
+                disabled={phase === 'collecting'}
+                className="w-28 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              />
+            </div>
+          )}
+
           {/* Start / Reset buttons */}
           {phase !== 'collecting' ? (
             <button
@@ -326,7 +389,9 @@ export default function AlgorithmTestPage() {
           </p>
 
           <p className="mt-2 text-xs text-blue-500 dark:text-blue-400">
-            Hard timeout: 30 s — will analyse whatever has been collected.
+            {timeoutMode === 'timeout'
+              ? `Auto-finalise after ${timeoutSecs} s — will analyse whatever has been collected.`
+              : `Strict mode — waiting until all ${n} samples are collected. Cancel to stop early.`}
           </p>
         </div>
       )}
